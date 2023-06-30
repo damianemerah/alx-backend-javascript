@@ -11,11 +11,11 @@ export default async function handleProfileSignup(
     signUpUser(firstName, lastName),
     uploadPhoto(fileName),
   ]);
-  response.forEach((res) =>
+  response.forEach((res) => {
     arr.push({
       status: res.status,
       value: res.status === 'fulfilled' ? res.value : res.reason,
-    }),
-  );
+    });
+  });
   return arr;
 }
