@@ -1,16 +1,50 @@
 const http = require('http');
+const fs = require('fs');
 
-const hostname = '127.0.0.1';
-const port = 1245;
+const studentsDatabase = process.argv[2];
+const dbContents = fs.readFileSync(studentsDatabase, 'utf-8');
+const studentsByCourse = JSON.parse(dbContents);
 
 const app = http.createServer((req, res) => {
-  res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello Holberton School!\n');
+
+  if (req.url === '/') {
+    res.statusCode = 200;
+    res.end('Hello Holberton School!\n');
+  } else if (req.url === '/students') {
+    res.statusCode = 200;
+
+    const studentsCount = studentsByCourse.reduce(
+      (count, course) => count + course.students.length,
+      0,
+    );
+    const studentsCS = studentsByCourse.find(
+      (course) => course.course === 'CS',
+    ).students;
+    const studentsSWE = studentsByCourse.find(
+      (course) => course.course === 'SWE',
+    ).students;
+
+    const response = [
+      'This is the list of our students',
+      `Number of students: ${studentsCount}`,
+      `Number of students in CS: ${studentsCS.length}. List: ${studentsCS.join(
+        ', ',
+      )}`,
+      `Number of students in SWE: ${
+        studentsSWE.length
+      }. List: ${studentsSWE.join(', ')}`,
+    ].join('\n');
+
+    res.end(response + '\n');
+  } else {
+    res.statusCode = 404;
+    res.end('Not Found\n');
+  }
 });
 
-app.listen(port, hostname, () => {
-  console.log('Server running at http://' + hostname + ':' + port);
+app.listen(1245, () => {
+  console.log('Server is listening on port 1245');
 });
 
 module.exports = app;
