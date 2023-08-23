@@ -2,6 +2,12 @@ const http = require('http');
 const fs = require('fs');
 
 const studentsDatabase = process.argv[2];
+if (!fs.existsSync(studentsDatabase)) {
+  throw new Error('Cannot load the database');
+}
+if (!fs.statSync(studentsDatabase).isFile()) {
+  throw new Error('Cannot load the database');
+}
 const dbContents = fs.readFileSync(studentsDatabase, 'utf-8');
 const studentsByCourse = JSON.parse(dbContents);
 
@@ -48,4 +54,3 @@ app.listen(1245, () => {
 });
 
 module.exports = app;
-
