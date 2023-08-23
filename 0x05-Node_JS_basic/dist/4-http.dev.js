@@ -2,16 +2,17 @@
 
 var http = require('http');
 
-var hostname = '127.0.0.1';
-var port = 1245;
-var app = http.createServer(function (_, res) {
-  responseText = 'Hello Holberton School!';
-  res.statusCode = 200;
+var PORT = 1245;
+var HOST = 'localhost';
+var app = http.createServer();
+app.on('request', function (_, res) {
+  var responseText = 'Hello Holberton School!';
   res.setHeader('Content-Type', 'text/plain');
   res.setHeader('Content-Length', responseText.length);
+  res.statusCode = 200;
   res.write(Buffer.from(responseText));
 });
-app.listen(port, hostname, function () {
-  console.log('Server running at http://' + hostname + ':' + port);
+app.listen(PORT, HOST, function () {
+  process.stdout.write("Server listening at -> http://".concat(HOST, ":").concat(PORT, "\n"));
 });
 module.exports = app;
