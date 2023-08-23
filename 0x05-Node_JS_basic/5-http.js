@@ -1,50 +1,55 @@
-const http = require('http');
 const fs = require('fs');
 
-const studentsDatabase = process.argv[2];
-const dbContents = fs.readFileSync(studentsDatabase, 'utf-8');
-const studentsByCourse = JSON.parse(dbContents);
+/**
+ * Counts the students in a CSV data file.
+ * @param {String} dataPath The path to the CSV data file.
+ * @author Bezaleel Olakunori <https://github.com/B3zaleel>
+ */
+const countStudents = (dataPath) =>
+  new Promise((resolve, reject) => {
+    fs.readFile(dataPath, 'utf-8', (err, data) => {
+      if (err) {
+        reject(new Error('Cannot load the database'));
+      }
+      if (data) {
+        const fileLines = data.toString('utf-8').trim().split('\n');
+        const studentGroups = {};
+        const dbFieldNames = fileLines[0].split(',');
+        const studentPropNames = dbFieldNames.slice(0, dbFieldNames.length - 1);
 
-const app = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'text/plain');
+        for (const line of fileLines.slice(1)) {
+          const studentRecord = line.split(',');
+          const studentPropValues = studentRecord.slice(
+            0,
+            studentRecord.length - 1,
+          );
+          const field = studentRecord[studentRecord.length - 1];
+          if (!Object.keys(studentGroups).includes(field)) {
+            studentGroups[field] = [];
+          }
+          const studentEntries = studentPropNames.map((propName, idx) => [
+            propName,
+            studentPropValues[idx],
+          ]);
+          studentGroups[field].push(Object.fromEntries(studentEntries));
+        }
 
-  if (req.url === '/') {
-    res.statusCode = 200;
-    res.end('Hello Holberton School!\n');
-  } else if (req.url === '/students') {
-    res.statusCode = 200;
+        const totalStudents = Object.values(studentGroups).reduce(
+          (pre, cur) => (pre || []).length + cur.length,
+        );
+        console.log(`Number of students: ${totalStudents}`);
+        for (const [field, group] of Object.entries(studentGroups)) {
+          const studentNames = group
+            .map((student) => student.firstname)
+            .join(', ');
+          console.log(
+            `Number of students in ${field}: ${group.length}. List: ${studentNames}`,
+          );
+        }
+        resolve(true);
+      }
+    });
+  });
 
-    const studentsCount = studentsByCourse.reduce(
-      (count, course) => count + course.students.length,
-      0,
-    );
-    const studentsCS = studentsByCourse.find(
-      (course) => course.course === 'CS',
-    ).students;
-    const studentsSWE = studentsByCourse.find(
-      (course) => course.course === 'SWE',
-    ).students;
+module.exports = countStudents;
 
-    const response = [
-      'This is the list of our students',
-      `Number of students: ${studentsCount}`,
-      `Number of students in CS: ${studentsCS.length}. List: ${studentsCS.join(
-        ', ',
-      )}`,
-      `Number of students in SWE: ${
-        studentsSWE.length
-      }. List: ${studentsSWE.join(', ')}`,
-    ].join('\n');
-
-    res.end(response + '\n');
-  } else {
-    res.statusCode = 404;
-    res.end('Not Found\n');
-  }
-});
-
-app.listen(1245, () => {
-  console.log('Server is listening on port 1245');
-});
-
-module.exports = app;
