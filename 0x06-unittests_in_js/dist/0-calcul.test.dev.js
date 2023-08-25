@@ -2,7 +2,7 @@
 
 var calculateNumber = require('./0-calcul.js');
 
-var assert = require('chai').assert;
+var assert = require('assert');
 
 describe('calculateNumber', function () {
   it('should return 4', function () {
